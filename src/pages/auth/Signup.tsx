@@ -4,12 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 
-// "firstName": "Sunny",
-//     "lastName": "Mallick",
-//     "c": "admin",
-//     "password": "Admin@123",
-//     "emailAddress": "admin@gmail.com",
-//     "role": "admin"
+
 
 const Signup = () => {
   const navigation = useNavigate();
