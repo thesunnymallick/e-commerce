@@ -2,9 +2,13 @@ import { useState } from "react";
 import { Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { setLogin } from "../../redux/slice/authSlice";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
 
 const Login = () => {
   const navigation=useNavigate();
+  const dispatch=useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
@@ -12,6 +16,10 @@ const Login = () => {
     userName:"",
     password:""
   });
+
+  
+
+
 
   const handleUserName = (e: any) => {
     setUserName(e.target.value);
@@ -21,27 +29,59 @@ const Login = () => {
     setPassword(e.target.value);
   };
 
+
   const handleLoginUser = async () => {
     let error: any = {
-      userName:"",
-      password:"",
+      userName: "",
+      password: "",
     };
+  
     if (!userName) {
-      error.userName= "User name is required";
+      error.userName = "User name is required";
     }
-    if(!password){
+  
+    if (!password) {
       error.password = "Password is required";
     }
-    setErrors(error)
+  
+    setErrors(error);
+  
+    if (error.userName || error.password) {
+      return;
+    }
+  
     try {
-      if(error.userName || error.password) return; 
-      const data = await axios.post("http://localhost:5184/api/Auth/Login", {
-        userName,
-        password,
-      });
-      console.log("api res : ", data);
-    } catch (error) {
-      console.log(error);
+      const response = await axios.post(
+        "http://localhost:5184/api/Auth/Login",
+        {
+          userName,
+          password,
+        }
+      );
+  
+      if(response.status==200 || response.status===201){
+        const { token, user, message } = response.data;
+  
+      // Save in LocalStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+  
+      // Save in Redux
+      dispatch(
+        setLogin({
+          token,
+          user,
+        })
+      );
+  
+      toast.success(message);
+      navigation("/");
+      }
+  
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Invalid username or password"
+      );
     }
   };
 
