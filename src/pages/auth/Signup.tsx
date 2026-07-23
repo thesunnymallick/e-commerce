@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { User, Mail, Lock, Eye, EyeOff, UserCircle2 } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
 
 // "firstName": "Sunny",
 //     "lastName": "Mallick",
@@ -10,6 +12,7 @@ import axios from "axios";
 //     "role": "admin"
 
 const Signup = () => {
+  const navigation = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -60,16 +63,29 @@ const Signup = () => {
         userName: userName,
         password: password,
         emailAddress: email,
-        role: role
+        role: role,
       };
 
-      const responce = await axios.post(
+      const response = await axios.post(
         `http://localhost:5184/api/Auth/Signup`,
         payload
       );
-      console.log(responce)
-    } catch (error) {
-      console.log(error)
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Account created successfully!");
+        setTimeout(() => {
+          navigation("/login");
+        }, 2000);
+      }
+    } catch (error: any) {
+      if (error.response) {
+        toast.error(error.response.data?.message || "Registration failed.");
+      } else if (error.request) {
+        toast.error("Server is not responding.");
+      } else {
+        toast.error("Something went wrong.");
+      }
+
+      console.error(error);
     }
   };
 
@@ -266,7 +282,10 @@ const Signup = () => {
 
             <p className="text-center mt-6 text-gray-500">
               Already have an account?
-              <span className="text-orange-500 font-semibold cursor-pointer ml-2">
+              <span
+                onClick={() => navigation("/login")}
+                className="text-orange-500 font-semibold cursor-pointer ml-2"
+              >
                 Login
               </span>
             </p>

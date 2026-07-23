@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router";
 
 const Login = () => {
+  const navigation=useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
@@ -173,7 +175,9 @@ const Login = () => {
 
             <p className="mt-8 text-center text-gray-500">
               Don't have an account?
-              <span className="ml-2 cursor-pointer font-semibold text-orange-500">
+              <span 
+              onClick={()=>navigation("/signup")}
+              className="ml-2 cursor-pointer font-semibold text-orange-500">
                 Sign Up
               </span>
             </p>
