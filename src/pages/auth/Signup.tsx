@@ -3,8 +3,7 @@ import { User, Mail, Lock, Eye, EyeOff, UserCircle2 } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
-
-
+import { BASE_API_URL } from "../../constant";
 
 const Signup = () => {
   const navigation = useNavigate();
@@ -62,7 +61,7 @@ const Signup = () => {
       };
 
       const response = await axios.post(
-        `http://localhost:5184/api/Auth/Signup`,
+        `${BASE_API_URL}/api/Auth/Signup`,
         payload
       );
       if (response.status === 200 || response.status === 201) {

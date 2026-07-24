@@ -6,8 +6,6 @@ import {
   Settings,
   LogOut,
   ShieldCheck,
-  Bell,
-  ChevronRight,
 } from "lucide-react";
 import { NavLink } from "react-router";
 import { useSelector } from "react-redux";
@@ -27,17 +25,12 @@ const Sidebar = () => {
       path: "/admin/products",
     },
     {
-      title: "Products",
-      icon: Package,
-      path: "/admin/products/add",
-    },
-    {
       title: "Orders",
       icon: ShoppingCart,
       path: "/admin/orders",
     },
     {
-      title: "Users",
+      title: "Customers",
       icon: Users,
       path: "/admin/users",
     },
@@ -49,76 +42,58 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="flex h-screen w-72 flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-black text-white shadow-2xl lg:m-5 lg:h-[calc(100vh-40px)] lg:rounded-3xl">
-
+    <aside className="flex h-screen w-72 flex-col border-r border-gray-200 bg-white shadow-sm">
       {/* Logo */}
-      <div className="border-b border-slate-800 px-6 py-6">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 shadow-lg shadow-orange-500/40">
-            <ShieldCheck size={28} />
+      <div className="border-b border-gray-100 px-6 py-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white shadow-lg">
+            <ShieldCheck size={24} />
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold tracking-wide">
+            <h2 className="text-xl font-bold text-gray-900">
               ShopKart
             </h2>
 
-            <p className="text-sm text-slate-400">
-              Ecommerce Admin
+            <p className="text-sm text-gray-500">
+              Admin Dashboard
             </p>
           </div>
         </div>
       </div>
 
-      {/* Profile */}
-      <div className="mx-4 my-5 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+      {/* User */}
+      <div className="px-5 py-6">
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+          <div className="flex items-center gap-3">
+            <img
+              src={`https://ui-avatars.com/api/?name=${
+                user?.firstName || "Admin"
+              }&background=F97316&color=fff`}
+              alt="Admin"
+              className="h-14 w-14 rounded-full ring-2 ring-orange-500"
+            />
 
-        <div className="flex items-center gap-4">
-          <img
-            src={`https://ui-avatars.com/api/?name=${user?.firstName || "Admin"}&background=f97316&color=fff`}
-            alt="Admin"
-            className="h-16 w-16 rounded-full border-4 border-orange-500"
-          />
+            <div>
+              <h3 className="font-semibold text-gray-900">
+                {user?.firstName} {user?.lastName}
+              </h3>
 
-          <div>
-            <h3 className="text-lg font-semibold">
-              {user?.firstName} {user?.lastName}
-            </h3>
-
-            <p className="capitalize text-sm text-slate-400">
-              {user?.role}
-            </p>
+              <p className="text-sm capitalize text-gray-500">
+                {user?.role || "Administrator"}
+              </p>
+            </div>
           </div>
-        </div>
-
-        <div className="mt-5 grid grid-cols-3 gap-2 rounded-xl bg-slate-800 p-3 text-center">
-
-          <div>
-            <h4 className="font-bold text-white">125</h4>
-            <p className="text-xs text-slate-400">Orders</p>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-white">₹85K</h4>
-            <p className="text-xs text-slate-400">Revenue</p>
-          </div>
-
-          <div className="flex items-center justify-center">
-            <Bell className="text-orange-400" size={22} />
-          </div>
-
         </div>
       </div>
 
-      {/* Menu */}
-      <div className="flex-1 overflow-y-auto px-4">
-
-        <p className="mb-4 px-2 text-xs font-semibold uppercase tracking-[3px] text-slate-500">
-          Main Menu
+      {/* Navigation */}
+      <div className="flex-1 px-5">
+        <p className="mb-3 px-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+          MENU
         </p>
 
         <nav className="space-y-2">
-
           {menus.map((menu) => {
             const Icon = menu.icon;
 
@@ -127,46 +102,46 @@ const Sidebar = () => {
                 key={menu.path}
                 to={menu.path}
                 className={({ isActive }) =>
-                  `group flex items-center justify-between rounded-2xl px-4 py-3 transition-all duration-300 ${
+                  `group flex items-center gap-4 rounded-xl px-4 py-3 transition-all duration-200 ${
                     isActive
-                      ? "bg-gradient-to-r from-orange-500 to-amber-500 shadow-lg shadow-orange-500/30"
-                      : "hover:bg-slate-800"
+                      ? "bg-orange-500 text-white shadow-md"
+                      : "text-gray-600 hover:bg-orange-50 hover:text-orange-600"
                   }`
                 }
               >
-                <div className="flex items-center gap-4">
-                  <Icon size={20} />
+                {({ isActive }) => (
+                  <>
+                    <Icon
+                      size={20}
+                      className={
+                        isActive
+                          ? "text-white"
+                          : "text-gray-500 group-hover:text-orange-500"
+                      }
+                    />
 
-                  <span className="font-medium">
-                    {menu.title}
-                  </span>
-                </div>
-
-                <ChevronRight
-                  size={18}
-                  className="opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100"
-                />
+                    <span className="font-medium">
+                      {menu.title}
+                    </span>
+                  </>
+                )}
               </NavLink>
             );
           })}
-
         </nav>
       </div>
 
       {/* Logout */}
-      <div className="border-t border-slate-800 p-5">
-
-        <button className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-500 py-3 font-semibold transition-all hover:bg-red-600">
-          <LogOut size={20} />
+      <div className="border-t border-gray-100 p-5">
+        <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 py-3 font-medium text-red-600 transition hover:bg-red-500 hover:text-white">
+          <LogOut size={18} />
           Logout
         </button>
 
-        <p className="mt-5 text-center text-xs text-slate-500">
-          ShopKart Admin v1.0
+        <p className="mt-5 text-center text-xs text-gray-400">
+          ShopKart Admin • v1.0.0
         </p>
-
       </div>
-
     </aside>
   );
 };

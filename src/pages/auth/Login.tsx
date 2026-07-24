@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { setLogin } from "../../redux/slice/authSlice";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
+import { BASE_API_URL } from "../../constant";
 
 const Login = () => {
   const navigation=useNavigate();
@@ -16,10 +17,6 @@ const Login = () => {
     userName:"",
     password:""
   });
-
-  
-
-
 
   const handleUserName = (e: any) => {
     setUserName(e.target.value);
@@ -49,10 +46,8 @@ const Login = () => {
     if (error.userName || error.password) {
       return;
     }
-  
     try {
-      const response = await axios.post(
-        "http://localhost:5184/api/Auth/Login",
+      const response = await axios.post( `${BASE_API_URL}/api/Auth/Login`,
         {
           userName,
           password,
