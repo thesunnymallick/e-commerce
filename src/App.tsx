@@ -17,6 +17,9 @@ import Orders from "./pages/admin/Orders";
 import AdminLayout from "./layouts/AdminLayout";
 import Categories from "./pages/admin/Categories";
 import ProductsList from "./pages/product/ProductsList";
+import ProductDetails from "./pages/product/ProductDetails";
+import CartPage from "./pages/cart/Cart";
+import Profile from "./pages/profile/Profile";
 
 
 function App() {
@@ -30,6 +33,9 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/products" element={<ProductsList />} />
+              <Route path="/product/:id" element={<ProductDetails/>} />
+              <Route path="/cart" element={<CartPage/>} />
+              <Route path="/profile" element={<Profile/>} />
             </Route>
             <Route element={<AdminRoute />}>
              <Route element={<AdminLayout/>}>

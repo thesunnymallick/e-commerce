@@ -5,8 +5,13 @@ import {
     User,
     Menu,
   } from "lucide-react";
+import { useNavigate } from "react-router";
+import CartIcon from "../components/CartIcons";
   
   const Header = () => {
+    const navigation=useNavigate();
+
+
     return (
       <header className="sticky top-0 z-50 bg-white shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -56,13 +61,7 @@ import {
               <Heart className="text-gray-700 hover:text-orange-500" />
             </button>
   
-            <button className="relative">
-              <ShoppingCart className="text-gray-700 hover:text-orange-500" />
-  
-              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
-                2
-              </span>
-            </button>
+             <CartIcon/>
   
             <button>
               <User className="text-gray-700 hover:text-orange-500" />
