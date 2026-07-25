@@ -1,84 +1,33 @@
 import { useEffect, useState } from "react";
-import { Plus, Search, Trash2, ImageOff, PackageX } from "lucide-react";
+import { Plus, Search, Trash2, Pencil, ImageOff } from "lucide-react";
 import AddProductModal, { type ProductFormData } from "./Addproductmodal";
+import EditProductModal, { type EditProductFormData } from "./EditProductModal";
 import axios from "axios";
 import { BASE_API_URL } from "../../constant";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
-// Sample seed data so the page isn't empty — replace/remove once wired to a backend
-const SAMPLE_PRODUCTS = [
-  {
-    // id: "1",
-    ProductName: "Samsung A52s 5g",
-    Description: "This is Samsung A52s 5g mobile",
-    Price: "29000",
-    Category: "Mobiles",
-    imagePreview: null,
-  },
-  {
-    // id: "2",
-    ProductName: "MacBook Air M2",
-    Description: "13-inch, 8GB RAM, 256GB SSD",
-    Price: "104900",
-    Category: "Laptops",
-    imagePreview: null,
-  },
-];
-
 const Products = () => {
   const token = useSelector((state: any) => state.auth.token);
-  const [products, setProducts] = useState<[]>();
+  const [products, setProducts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddProduct = async (product: ProductFormData) => {
-    try {
-      const formData = new FormData();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-      formData.append("ProductName", product.ProductName);
-      formData.append("Description", product.Description);
-      formData.append("Price", product.Price);
-      formData.append("Category", product.Category);
-
-      if (product.image) {
-        formData.append("ImageFile", product.image);
-      }
-
-      const { data } = await axios.post(
-        `${BASE_API_URL}/api/Product/Add`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      toast.success(data?.message || "Product added successfully!");
-
-      fetchProducts();
-
-      // Optional: Refresh product list here
-      // fetchProducts();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to add product.");
-
-      console.log(error.response?.data || error.message);
-    }
+  const authHeaders = {
+    Authorization: `Bearer ${token}`,
   };
 
   const fetchProducts = async () => {
     try {
-      const data = await axios.get(`${BASE_API_URL}/api/Product/all`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+      const { data, status } = await axios.get(`${BASE_API_URL}/api/Product/all`, {
+        headers: authHeaders,
       });
-      if (data?.status === 200 || data.status === 201) {
-        setProducts(data?.data);
+      if (status === 200 || status === 201) {
+        setProducts(data);
       }
     } catch (error) {
       console.log(error);
@@ -89,12 +38,87 @@ const Products = () => {
     fetchProducts();
   }, []);
 
-  // const handleDelete = (id: string) => {
-  //   setProducts((prev) => prev.filter((p) => p.id !== id));
-  // };
+  const handleAddProduct = async (product: ProductFormData) => {
+    try {
+      const formData = new FormData();
+      formData.append("ProductName", product.ProductName);
+      formData.append("Description", product.Description);
+      formData.append("Price", product.Price);
+      formData.append("Category", product.Category);
+      if (product.image) formData.append("ImageFile", product.image);
+
+      const { data } = await axios.post(
+        `${BASE_API_URL}/api/Product/Add`,
+        formData,
+        {
+          headers: { ...authHeaders, "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      toast.success(data?.message || "Product added successfully!");
+      fetchProducts();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to add product.");
+      console.log(error.response?.data || error.message);
+    }
+  };
+
+  // ---- UPDATE ----
+  const openEditModal = (product: any) => {
+    setEditingProduct(product);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateProduct = async (id: number, product: EditProductFormData) => {
+    try {
+      const formData = new FormData();
+      formData.append("ProductName", product.ProductName);
+      formData.append("Description", product.Description);
+      formData.append("Price", product.Price);
+      formData.append("Category", product.Category);
+
+      const { data } = await axios.put(
+        `${BASE_API_URL}/api/Product/Update/${id}`,
+        formData,
+        {
+          headers: { ...authHeaders, "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      toast.success(data?.message || "Product updated successfully!");
+      setIsEditModalOpen(false);
+      setEditingProduct(null);
+      fetchProducts();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to update product.");
+      console.log(error.response?.data || error.message);
+    }
+  };
+
+  // ---- DELETE ----
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      setDeletingId(id);
+      const { data } = await axios.delete(
+        `${BASE_API_URL}/api/Product/Delete/${id}`,
+        { headers: authHeaders }
+      );
+
+      toast.success(data?.message || "Product deleted successfully!");
+      // Instantly remove from UI instead of waiting on a refetch
+      setProducts((prev) => prev.filter((p: any) => p.id !== id));
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to delete product.");
+      console.log(error.response?.data || error.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filteredProducts = products?.filter((product: any) =>
-    product.productName.toLowerCase().includes(search.toLowerCase())
+    product.productName?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -153,12 +177,9 @@ const Products = () => {
           </thead>
 
           <tbody className="divide-y divide-gray-100 bg-white">
-            {filteredProducts?.length || 0 > 0 ? (
-              filteredProducts?.map((product: any) => (
-                <tr
-                  key={product.id}
-                  className="transition hover:bg-orange-50/40"
-                >
+            {filteredProducts && filteredProducts.length > 0 ? (
+              filteredProducts.map((product: any) => (
+                <tr key={product.id} className="transition hover:bg-orange-50/40">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {product.image ? (
@@ -172,7 +193,6 @@ const Products = () => {
                           <ImageOff size={18} />
                         </div>
                       )}
-
                       <span className="font-medium text-gray-800">
                         {product.productName}
                       </span>
@@ -193,11 +213,24 @@ const Products = () => {
                     {product.description}
                   </td>
 
-                  <td className="px-6 py-4 text-center">
-                    <button className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-500 hover:text-white">
-                      <Trash2 size={16} />
-                      Delete
-                    </button>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => openEditModal(product)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                      >
+                        <Pencil size={16} />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        disabled={deletingId === product.id}
+                        className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-500 hover:text-white disabled:opacity-50"
+                      >
+                        <Trash2 size={16} />
+                        {deletingId === product.id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -212,11 +245,20 @@ const Products = () => {
         </table>
       </div>
 
-      {/* Add Product Modal */}
       <AddProductModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddProduct={handleAddProduct}
+      />
+
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingProduct(null);
+        }}
+        onUpdateProduct={handleUpdateProduct}
+        product={editingProduct}
       />
     </div>
   );

@@ -1,16 +1,15 @@
-import { useState, useRef, useEffect } from "react";
-import { X, UploadCloud, ImageOff } from "lucide-react";
+// EditProductModal.tsx
+import { useState, useEffect } from "react";
+import { X, ImageOff } from "lucide-react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { BASE_API_URL } from "../../constant";
 
-export interface ProductFormData {
+export interface EditProductFormData {
   ProductName: string;
   Description: string;
   Price: string;
   Category: string;
-  image: File | null;
-  imagePreview: string | null;
 }
 
 interface CategoryOption {
@@ -18,27 +17,28 @@ interface CategoryOption {
   categoryName: string;
 }
 
-interface AddProductModalProps {
+interface EditProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProduct: (product: ProductFormData) => void;
+  onUpdateProduct: (id: number, product: EditProductFormData) => void;
+  product: any | null; // the product being edited
 }
 
-const emptyForm = {
-  ProductName: "",
-  Description: "",
-  Price: "",
-  Category: "",
-};
-
-const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps) => {
+const EditProductModal = ({
+  isOpen,
+  onClose,
+  onUpdateProduct,
+  product,
+}: EditProductModalProps) => {
   const token = useSelector((state: any) => state.auth.token);
 
-  const [form, setForm] = useState(emptyForm);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [form, setForm] = useState<EditProductFormData>({
+    ProductName: "",
+    Description: "",
+    Price: "",
+    Category: "",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -66,14 +66,20 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
     fetchCategories();
   }, [isOpen, token]);
 
-  if (!isOpen) return null;
+  // Pre-fill form whenever a new product is passed in
+  useEffect(() => {
+    if (product) {
+      setForm({
+        ProductName: product.productName || "",
+        Description: product.description || "",
+        Price: String(product.price ?? ""),
+        Category: product.category || "",
+      });
+      setErrors({});
+    }
+  }, [product]);
 
-  const resetAndClose = () => {
-    setForm(emptyForm);
-    setPreview(null);
-    setErrors({});
-    onClose();
-  };
+  if (!isOpen || !product) return null;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -83,33 +89,13 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-
-    setImageFile(file);
-    setErrors((prev) => ({ ...prev, image: "" }));
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    } else {
-      setPreview(null);
-      setImageFile(null);
-    }
-  };
-
   const validate = () => {
     const next: Record<string, string> = {};
-
     if (!form.ProductName.trim()) next.ProductName = "Product name is required";
     if (!form.Description.trim()) next.Description = "Description is required";
-    if (!form.Price.trim()) next.Price = "Price is required";
-    else if (isNaN(Number(form.Price)) || Number(form.Price) <= 0)
+    if (!form.Price.trim() || isNaN(Number(form.Price)) || Number(form.Price) <= 0)
       next.Price = "Enter a valid price";
     if (!form.Category) next.Category = "Select a category";
-    if (!preview) next.image = "Product image is required";
-
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -117,35 +103,24 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
-    onAddProduct({
-      ...form,
-      image: imageFile,
-      imagePreview: preview,
-    });
-
-    resetAndClose();
+    onUpdateProduct(product.id, form);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-          <h2 className="text-lg font-bold text-gray-900">Add Product</h2>
+          <h2 className="text-lg font-bold text-gray-900">Edit Product</h2>
           <button
-            onClick={resetAndClose}
+            onClick={onClose}
             className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Close"
             type="button"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5 px-6 py-6">
-          {/* Product Name */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700">
               Product Name
@@ -155,11 +130,8 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
               name="ProductName"
               value={form.ProductName}
               onChange={handleChange}
-              placeholder="e.g. Samsung A52s 5g"
               className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-orange-500/30 ${
-                errors.ProductName
-                  ? "border-red-300 focus:border-red-500"
-                  : "border-gray-200 focus:border-orange-500"
+                errors.ProductName ? "border-red-300" : "border-gray-200 focus:border-orange-500"
               }`}
             />
             {errors.ProductName && (
@@ -167,7 +139,6 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
             )}
           </div>
 
-          {/* Description */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700">
               Description
@@ -177,11 +148,8 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
               value={form.Description}
               onChange={handleChange}
               rows={3}
-              placeholder="This is Samsung A52s 5g mobile"
               className={`w-full resize-none rounded-xl border px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-orange-500/30 ${
-                errors.Description
-                  ? "border-red-300 focus:border-red-500"
-                  : "border-gray-200 focus:border-orange-500"
+                errors.Description ? "border-red-300" : "border-gray-200 focus:border-orange-500"
               }`}
             />
             {errors.Description && (
@@ -189,7 +157,6 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
             )}
           </div>
 
-          {/* Price + Category */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -200,12 +167,9 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
                 name="Price"
                 value={form.Price}
                 onChange={handleChange}
-                placeholder="29000"
                 min={0}
                 className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-orange-500/30 ${
-                  errors.Price
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-200 focus:border-orange-500"
+                  errors.Price ? "border-red-300" : "border-gray-200 focus:border-orange-500"
                 }`}
               />
               {errors.Price && <p className="mt-1 text-xs text-red-500">{errors.Price}</p>}
@@ -221,9 +185,7 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
                 onChange={handleChange}
                 disabled={loadingCategories}
                 className={`w-full rounded-xl border bg-white px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-orange-500/30 disabled:opacity-60 ${
-                  errors.Category
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-200 focus:border-orange-500"
+                  errors.Category ? "border-red-300" : "border-gray-200 focus:border-orange-500"
                 }`}
               >
                 <option value="">
@@ -238,62 +200,25 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
               {errors.Category && (
                 <p className="mt-1 text-xs text-red-500">{errors.Category}</p>
               )}
-              {!loadingCategories && categories.length === 0 && (
-                <p className="mt-1 text-xs text-gray-400">
-                  No categories found. Add one from the Categories page first.
-                </p>
-              )}
             </div>
           </div>
 
-          {/* Image upload */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
-              Product Image
-            </label>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
+          {product.image ? (
+            <img
+              src={product.image}
+              alt="Current"
+              className="h-16 w-16 rounded-lg object-cover ring-1 ring-gray-200"
             />
-
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className={`flex cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed px-4 py-4 transition hover:bg-orange-50/50 ${
-                errors.image ? "border-red-300" : "border-gray-200"
-              }`}
-            >
-              {preview ? (
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="h-16 w-16 rounded-lg object-cover ring-1 ring-gray-200"
-                />
-              ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
-                  <ImageOff size={22} />
-                </div>
-              )}
-
-              <div className="flex flex-col">
-                <span className="flex items-center gap-1.5 text-sm font-medium text-orange-600">
-                  <UploadCloud size={16} />
-                  {preview ? "Change image" : "Upload image"}
-                </span>
-                <span className="text-xs text-gray-400">PNG, JPG up to 5MB</span>
-              </div>
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+              <ImageOff size={22} />
             </div>
-            {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image}</p>}
-          </div>
+          )}
 
-          {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={resetAndClose}
+              onClick={onClose}
               className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
             >
               Cancel
@@ -302,7 +227,7 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
               type="submit"
               className="flex-1 rounded-xl bg-orange-500 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-orange-600"
             >
-              Add Product
+              Save Changes
             </button>
           </div>
         </form>
@@ -311,4 +236,4 @@ const AddProductModal = ({ isOpen, onClose, onAddProduct }: AddProductModalProps
   );
 };
 
-export default AddProductModal;
+export default EditProductModal;

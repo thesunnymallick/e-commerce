@@ -30,9 +30,9 @@ const Sidebar = () => {
       path: "/admin/orders",
     },
     {
-      title: "Customers",
+      title: "Categories",
       icon: Users,
-      path: "/admin/users",
+      path: "/admin/Categories",
     },
     {
       title: "Settings",
