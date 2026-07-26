@@ -7,10 +7,11 @@ import { toast } from "react-toastify";
 import { BASE_API_URL } from "../../constant";
 
 interface ProfileData {
-  id: number;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phoneNumber: string;
+  phone: string;
+  gender: string;
 }
 
 interface Address {
@@ -29,6 +30,14 @@ const emptyAddressForm = {
   pincode: "",
 };
 
+const emptyProfileForm: ProfileData = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  gender: "",
+};
+
 const Profile = () => {
   const token = useSelector((state: any) => state.auth?.token);
   // ASSUMPTION: user id is stored on auth state as `user.id` or `userId`.
@@ -43,11 +52,7 @@ const Profile = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [editingProfile, setEditingProfile] = useState(false);
-  const [profileForm, setProfileForm] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-  });
+  const [profileForm, setProfileForm] = useState<ProfileData>(emptyProfileForm);
   const [savingProfile, setSavingProfile] = useState(false);
 
   // ---- Addresses ----
@@ -71,9 +76,11 @@ const Profile = () => {
       });
       setProfile(data);
       setProfileForm({
-        fullName: data?.fullName || "",
+        firstName: data?.firstName || "",
+        lastName: data?.lastName || "",
         email: data?.email || "",
-        phoneNumber: data?.phoneNumber || "",
+        phone: data?.phone || "",
+        gender: data?.gender || "",
       });
     } catch (error) {
       console.log(error);
@@ -112,7 +119,9 @@ const Profile = () => {
   }, [token, userId]);
 
   // ---- Profile handlers ----
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setProfileForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -231,17 +240,31 @@ const Profile = () => {
             </p>
           ) : editingProfile ? (
             <div className="space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={profileForm.fullName}
-                  onChange={handleProfileChange}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30"
-                />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={profileForm.firstName}
+                    onChange={handleProfileChange}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={profileForm.lastName}
+                    onChange={handleProfileChange}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30"
+                  />
+                </div>
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -255,17 +278,35 @@ const Profile = () => {
                   className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30"
                 />
               </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phoneNumber"
-                  value={profileForm.phoneNumber}
-                  onChange={handleProfileChange}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30"
-                />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={profileForm.phone}
+                    onChange={handleProfileChange}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Gender
+                  </label>
+                  <select
+                    name="gender"
+                    value={profileForm.gender}
+                    onChange={handleProfileChange}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30"
+                  >
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-2">
@@ -273,9 +314,11 @@ const Profile = () => {
                   onClick={() => {
                     setEditingProfile(false);
                     setProfileForm({
-                      fullName: profile.fullName || "",
+                      firstName: profile.firstName || "",
+                      lastName: profile.lastName || "",
                       email: profile.email || "",
-                      phoneNumber: profile.phoneNumber || "",
+                      phone: profile.phone || "",
+                      gender: profile.gender || "",
                     });
                   }}
                   className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
@@ -296,10 +339,18 @@ const Profile = () => {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                  Full Name
+                  First Name
                 </p>
                 <p className="mt-1 text-sm font-medium text-gray-900">
-                  {profile.fullName || "—"}
+                  {profile.firstName || "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Last Name
+                </p>
+                <p className="mt-1 text-sm font-medium text-gray-900">
+                  {profile.lastName || "—"}
                 </p>
               </div>
               <div>
@@ -315,7 +366,15 @@ const Profile = () => {
                   Phone Number
                 </p>
                 <p className="mt-1 text-sm font-medium text-gray-900">
-                  {profile.phoneNumber || "—"}
+                  {profile.phone || "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Gender
+                </p>
+                <p className="mt-1 text-sm font-medium text-gray-900">
+                  {profile.gender || "—"}
                 </p>
               </div>
             </div>

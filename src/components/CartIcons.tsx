@@ -23,8 +23,13 @@ const CartIcon = () => {
       const items = Array.isArray(data?.cartItems) ? data.cartItems : [];
       const total = items.reduce((sum: number, item: any) => sum + item.quantity, 0);
       setCount(total);
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      // Empty/nonexistent cart often comes back as an error (e.g. 404) rather than an empty array
+      if (error?.response?.status === 404) {
+        setCount(0);
+      } else {
+        console.log(error);
+      }
     }
   }, [token]);
 

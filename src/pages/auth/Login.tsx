@@ -178,9 +178,6 @@ const Login = () => {
                 Remember Me
               </label>
 
-              <button className="text-sm font-medium text-orange-500 hover:text-orange-600">
-                Forgot Password?
-              </button>
             </div>
 
             <button
@@ -191,22 +188,9 @@ const Login = () => {
               <ArrowRight size={18} />
             </button>
 
-            <div className="relative my-8">
-              <div className="border-t" />
+         
 
-              <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-sm text-gray-400">
-                OR
-              </span>
-            </div>
-
-            <button className="flex h-14 w-full items-center justify-center rounded-xl border transition hover:bg-gray-50">
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                className="mr-3 h-6 w-6"
-                alt="Google"
-              />
-              Continue with Google
-            </button>
+       
 
             <p className="mt-8 text-center text-gray-500">
               Don't have an account?

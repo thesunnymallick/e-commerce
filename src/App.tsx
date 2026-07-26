@@ -20,6 +20,10 @@ import ProductsList from "./pages/product/ProductsList";
 import ProductDetails from "./pages/product/ProductDetails";
 import CartPage from "./pages/cart/Cart";
 import Profile from "./pages/profile/Profile";
+import CheckoutPage from "./pages/checkout/CheckoutPage";
+import CheckoutSuccess from "./pages/checkout/CheckoutSuccess";
+import MyOrders from "./pages/orders/MyOrders";
+import AdminOrders from "./pages/admin/AdminOrders";
 
 
 function App() {
@@ -36,13 +40,17 @@ function App() {
               <Route path="/product/:id" element={<ProductDetails/>} />
               <Route path="/cart" element={<CartPage/>} />
               <Route path="/profile" element={<Profile/>} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/success" element={<CheckoutSuccess />} />
+              <Route path="/orders" element={<MyOrders />} />
             </Route>
             <Route element={<AdminRoute />}>
              <Route element={<AdminLayout/>}>
              <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/products" element={<Products />} />
-              <Route path="/admin/orders" element={<Orders />} />
+              <Route path="/admin/orders" element={<AdminOrders/>} />
               <Route path="/admin/Categories" element={<Categories/>} />
+              {/* <Route path="/admin/orders" element={<AdminOrders />} /> */}
              </Route>
       
             </Route>

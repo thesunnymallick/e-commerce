@@ -1,6 +1,6 @@
 // CartPage.tsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Minus, Plus, Trash2, ImageOff, ShoppingBag, ArrowRight } from "lucide-react";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -18,8 +18,8 @@ interface CartItem {
 }
 
 const CartPage = () => {
+  const navigation=useNavigate()
   const token = useSelector((state: any) => state.auth?.token);
-
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -36,6 +36,7 @@ const CartPage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setItems(Array.isArray(data?.cartItems) ? data.cartItems : []);
+      window.dispatchEvent(new Event("cart-updated")); 
     } catch (error) {
       console.log(error);
       toast.error("Failed to load your cart.");
@@ -68,6 +69,7 @@ const CartPage = () => {
         { quantity: newQuantity },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      window.dispatchEvent(new Event("cart-updated")); 
     } catch (error) {
       // Revert on failure
       setItems((prev) =>
@@ -75,6 +77,7 @@ const CartPage = () => {
           i.productId === item.productId ? { ...i, quantity: item.quantity } : i
         )
       );
+
       toast.error("Failed to update quantity.");
       console.log(error);
     } finally {
@@ -91,7 +94,9 @@ const CartPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setItems((prev) => prev.filter((i) => i.productId !== item.productId));
+      window.dispatchEvent(new Event("cart-updated")); 
       toast.success(data?.message || "Item removed from cart");
+
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Failed to remove item.");
       console.log(error);
@@ -234,7 +239,9 @@ const CartPage = () => {
                 <span>Total</span>
                 <span className="font-mono">₹{subtotal.toLocaleString("en-IN")}</span>
               </div>
-              <button className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3.5 text-sm font-semibold text-white shadow-md shadow-orange-500/20 transition hover:bg-orange-600">
+              <button 
+              onClick={()=>navigation("/checkout")}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3.5 text-sm font-semibold text-white shadow-md shadow-orange-500/20 transition hover:bg-orange-600">
                 Checkout
                 <ArrowRight size={16} />
               </button>

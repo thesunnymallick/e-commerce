@@ -108,6 +108,7 @@ const ProductDetails = () => {
       toast.success(
         data?.message || `Added ${quantity} × ${product.productName} to cart`
       );
+      window.dispatchEvent(new Event("cart-updated")); 
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Failed to add to cart.");
       console.log(error?.response?.data || error.message);

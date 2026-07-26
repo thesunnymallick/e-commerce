@@ -7,11 +7,21 @@ import {
   LogOut,
   ShieldCheck,
 } from "lucide-react";
-import { NavLink } from "react-router";
-import { useSelector } from "react-redux";
+import {  Link, NavLink, useNavigate } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import { setLogout } from "../redux/slice/authSlice";
+import { toast } from "react-toastify";
 
 const Sidebar = () => {
   const user = useSelector((state: any) => state.auth.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(setLogout());
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
 
   const menus = [
     {
@@ -34,33 +44,25 @@ const Sidebar = () => {
       icon: Users,
       path: "/admin/Categories",
     },
-    {
-      title: "Settings",
-      icon: Settings,
-      path: "/admin/settings",
-    },
+   
   ];
 
   return (
     <aside className="flex h-screen w-72 flex-col border-r border-gray-200 bg-white shadow-sm">
       {/* Logo */}
-      <div className="border-b border-gray-100 px-6 py-6">
+      <Link  to={"/"} className="border-b border-gray-100 px-6 py-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white shadow-lg">
+          <div  className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white shadow-lg">
             <ShieldCheck size={24} />
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-gray-900">
-              ShopKart
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900">ShopKart</h2>
 
-            <p className="text-sm text-gray-500">
-              Admin Dashboard
-            </p>
+            <p className="text-sm text-gray-500">Admin Dashboard</p>
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* User */}
       <div className="px-5 py-6">
@@ -120,9 +122,7 @@ const Sidebar = () => {
                       }
                     />
 
-                    <span className="font-medium">
-                      {menu.title}
-                    </span>
+                    <span className="font-medium">{menu.title}</span>
                   </>
                 )}
               </NavLink>
@@ -133,7 +133,10 @@ const Sidebar = () => {
 
       {/* Logout */}
       <div className="border-t border-gray-100 p-5">
-        <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 py-3 font-medium text-red-600 transition hover:bg-red-500 hover:text-white">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 py-3 font-medium text-red-600 transition hover:bg-red-500 hover:text-white"
+        >
           <LogOut size={18} />
           Logout
         </button>
